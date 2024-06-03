@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <vector>
 #include <chrono> // Agregado para medir el tiempo
-#include <algorithm> // Para usar std::remove_if y std::isspace
 
 using namespace std;
 using namespace std::chrono; // Espacio de nombres para la biblioteca chrono
@@ -27,8 +26,6 @@ vector<string> split(const string &s, char delimiter) {
     string token;
     istringstream tokenStream(s);
     while (getline(tokenStream, token, delimiter)) {
-        // Eliminar espacios en blanco alrededor del token
-        token.erase(remove_if(token.begin(), token.end(), ::isspace), token.end());
         tokens.push_back(token);
     }
     return tokens;
@@ -75,6 +72,24 @@ size_t getUserDataSize(const UserData& user) {
     return size;
 }
 
+// Función para guardar datos en un archivo CSV
+void saveToCSV(const string& filename, const vector<vector<string>>& data) {
+    ofstream file(filename);
+    if (file.is_open()) {
+        for (const auto& row : data) {
+            for (size_t i = 0; i < row.size(); ++i) {
+                file << row[i];
+                if (i != row.size() - 1) file << ",";
+            }
+            file << endl;
+        }
+        file.close();
+        cout << "Los datos se han guardado exitosamente en el archivo: " << filename << endl;
+    } else {
+        cout << "No se pudo abrir el archivo " << filename << " para escribir." << endl;
+    }
+}
+
 int main() {
     // Nombre del archivo CSV a leer
     string filename = "universities_followers.csv";
@@ -97,59 +112,37 @@ int main() {
 
     // Leer el archivo línea por línea
     string line;
-    int lineCount = 0;
-    int invalidLineCount = 0;
-    int validLineCount = 0;
     while (getline(file, line)) {
-        lineCount++;
-
         // Dividir la línea en tokens usando coma como delimitador
         vector<string> tokens = split(line, ',');
 
         // Verificar que la línea tenga la cantidad de campos esperados
         if (tokens.size() != 7) {
-            cout << "Error: línea inválida en el archivo CSV en la línea " << lineCount << ": " << line << endl;
-            invalidLineCount++;
+            cout << "Error: línea inválida en el archivo CSV" << endl;
             continue;
         }
 
-        try {
-            // Crear un objeto UserData y asignar los valores desde los tokens
-            UserData user;
-            user.university = tokens[0];
-            user.userId = tokens[1];
-            user.userName = tokens[2];
-            user.numberTweets = stoi(tokens[3]);
-            user.friendsCount = stoi(tokens[4]);
-            user.followersCount = stoi(tokens[5]);
-            user.createdAt = tokens[6];
+        // Crear un objeto UserData y asignar los valores desde los tokens
+        UserData user;
+        user.university = tokens[0];
+        user.userId = tokens[1];
+        user.userName = tokens[2];
+        user.numberTweets = convertToNumber(tokens[3]);
+        user.friendsCount = convertToNumber(tokens[4]);
+        user.followersCount = convertToNumber(tokens[5]);
+        user.createdAt = tokens[6];
 
-            // Insertar el usuario en el unordered_map utilizando user_id como clave
-            usuariosPorId[tokens[1]] = user;
+        // Insertar el usuario en el unordered_map utilizando user_id como clave
+        usuariosPorId[tokens[1]] = user;
 
-            // Insertar el usuario en el unordered_map adicional utilizando user_name como clave
-            usuariosPorNombre[tokens[2]] = user;
-
-            validLineCount++;
-        } catch (const invalid_argument& e) {
-            cout << "Error: argumento inválido en la línea " << lineCount << ": " << line << endl;
-            invalidLineCount++;
-        } catch (const out_of_range& e) {
-            cout << "Error: número fuera de rango en la línea " << lineCount << ": " << line << endl;
-            invalidLineCount++;
-        }
+        // Insertar el usuario en el
+        //unordered_map adicional utilizando user_name como clave
+        usuariosPorNombre[tokens[2]] = user;
     }
 
     // Medir el tiempo de inserción de datos
     auto endTime = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(endTime - startTime);
-    cout << "Tiempo de inserción de datos: " << duration.count() << " ms" << endl;
-
-    // Almacenar el tamaño del vector lleno
-    size_t vectorSize = usuariosPorId.size();
-    cout << "Número total de usuarios añadidos: " << vectorSize << endl;
-    cout << "Número de líneas válidas: " << validLineCount << endl;
-    cout << "Número de líneas inválidas: " << invalidLineCount << endl;
 
     // Calcular el tamaño total del unordered_map en MB
     size_t totalSize = 0;
@@ -158,7 +151,12 @@ int main() {
         totalSize += getUserDataSize(pair.second);
     }
     double totalSizeMB = static_cast<double>(totalSize) / (1024 * 1024);
-    cout << "Tamaño del vector lleno: " << totalSizeMB << " MB" << endl;
+
+    // Guardar el tiempo de inserción de datos en un archivo CSV
+    saveToCSV("tiempo_insercion.csv", {{"Tiempo de inserción (ms)"}, {to_string(duration.count())}});
+
+    // Guardar el tamaño del vector lleno en un archivo CSV
+    saveToCSV("tamaño_vector_lleno.csv", {{"Tamaño del vector lleno (MB)"}, {to_string(totalSizeMB)}});
 
     // Cerrar el archivo
     file.close();
@@ -193,7 +191,9 @@ int main() {
 
     auto searchEndTime = high_resolution_clock::now();
     auto searchDuration = duration_cast<milliseconds>(searchEndTime - searchStartTime);
-    cout << "Tiempo de búsqueda: " << searchDuration.count() << " ms" << endl;
+
+    // Guardar el tiempo de búsqueda del usuario en un archivo CSV
+    saveToCSV("tiempo_busqueda_usuario.csv", {{"Tiempo de búsqueda (ms)"}, {to_string(searchDuration.count())}});
 
     if (!foundUser.university.empty()) {
         cout << "Usuario encontrado:" << endl;
@@ -209,3 +209,4 @@ int main() {
 
     return 0;
 }
+
