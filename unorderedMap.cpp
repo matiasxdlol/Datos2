@@ -142,7 +142,7 @@ int main() {
 
     // Medir el tiempo de inserción de datos
     auto endTime = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(endTime - startTime);
+    auto duration = duration_cast<nanoseconds>(endTime - startTime);
 
     // Calcular el tamaño total del unordered_map en MB
     size_t totalSize = 0;
@@ -153,7 +153,7 @@ int main() {
     double totalSizeMB = static_cast<double>(totalSize) / (1024 * 1024);
 
     // Guardar el tiempo de inserción de datos en un archivo CSV
-    saveToCSV("tiempo_insercion.csv", {{"Tiempo de inserción (ms)"}, {to_string(duration.count())}});
+    saveToCSV("tiempo_insercion.csv", {{"Tiempo de inserción (ns)"}, {to_string(duration.count())}});
 
     // Guardar el tamaño del vector lleno en un archivo CSV
     saveToCSV("tamaño_vector_lleno.csv", {{"Tamaño del vector lleno (MB)"}, {to_string(totalSizeMB)}});
@@ -190,10 +190,10 @@ int main() {
     UserData foundUser = findUser((searchById ? usuariosPorId : usuariosPorNombre), searchKey, searchById);
 
     auto searchEndTime = high_resolution_clock::now();
-    auto searchDuration = duration_cast<milliseconds>(searchEndTime - searchStartTime);
+    auto searchDuration = duration_cast<nanoseconds>(searchEndTime - searchStartTime);
 
     // Guardar el tiempo de búsqueda del usuario en un archivo CSV
-    saveToCSV("tiempo_busqueda_usuario.csv", {{"Tiempo de búsqueda (ms)"}, {to_string(searchDuration.count())}});
+    saveToCSV("tiempo_busqueda_usuario.csv", {{"Tiempo de búsqueda (ns)"}, {to_string(searchDuration.count())}});
 
     if (!foundUser.university.empty()) {
         cout << "Usuario encontrado:" << endl;
