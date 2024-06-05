@@ -57,7 +57,7 @@ void save_CSV(const string& filename, const vector<vector<string>>& data) {
 int main() {
     string filename = "universities_followers.csv";
     vector<vector<string>> tiemposInsercion;
-    tiemposInsercion.push_back({"Iteración", "Tiempo de inserción (ms)"});
+    tiemposInsercion.push_back({"Iteración", "Tiempo de inserción (us)"});
 
     for (int i = 0; i < 10; ++i) {
         ifstream file(filename);
@@ -94,7 +94,7 @@ int main() {
         }
 
         auto endTime = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(endTime - startTime);
+        auto duration = duration_cast<microseconds>(endTime - startTime);
         tiemposInsercion.push_back({to_string(i + 1), to_string(duration.count())});
 
         
@@ -107,3 +107,4 @@ int main() {
 
     return 0;
 }
+
