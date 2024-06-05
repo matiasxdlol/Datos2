@@ -99,22 +99,14 @@ int main() {
     vector<int> indices_no_registrados;
     srand(time(nullptr)); // Seed para números aleatorios
 
-    // Generar 5 índices aleatorios para usuarios registrados
+    // Generar 5000 índices aleatorios para usuarios registrados
     for (int i = 0; i < 5000; ++i) {
         int index = rand() % usuarios.size();
         indices_registrados.push_back(index);
     }
 
-    // Generar 5 índices aleatorios para usuarios no registrados
-    for (int i = 0; i < 5000; ++i) {
-        int index = rand() % usuarios.size();
-        indices_no_registrados.push_back(index);
-    }
-
     vector<vector<string>> tiempos_busqueda_encontrados;
-    vector<vector<string>> tiempos_busqueda_no_encontrados;
-    tiempos_busqueda_encontrados.push_back({"User_Name", "Tiempo_de_busqueda (ms)"});
-    tiempos_busqueda_no_encontrados.push_back({"User_Name", "Tiempo_de_busqueda (ms)"});
+    tiempos_busqueda_encontrados.push_back({"User_Name", "Tiempo_de_busqueda (ns)"});
 
     unordered_map<string, User_data> usuariosPorId;
     for (const auto& user : usuarios) {
@@ -130,27 +122,13 @@ int main() {
         if (it != usuariosPorId.end()) {
             foundUser = it->second;
             auto searchEndTime = high_resolution_clock::now();
-            auto searchDuration = duration_cast<milliseconds>(searchEndTime - searchStartTime);
+            auto searchDuration = duration_cast<nanoseconds>(searchEndTime - searchStartTime);
             vector<string> tiempo_usuario = {user.user_name, to_string(searchDuration.count())};
             tiempos_busqueda_encontrados.push_back(tiempo_usuario);
         }
     }
 
-    // Búsqueda de usuarios no registrados
-    /*for (int index : indices_no_registrados) {
-        User_data user = usuarios[index];
-        auto searchStartTime = high_resolution_clock::now();
-        auto it = usuariosPorId.find(user.user_Id);
-        if (it == usuariosPorId.end()) {
-            auto searchEndTime = high_resolution_clock::now();
-            auto searchDuration = duration_cast<milliseconds>(searchEndTime - searchStartTime);
-            vector<string> tiempo_usuario = {user.user_name, to_string(searchDuration.count())};
-            tiempos_busqueda_no_encontrados.push_back(tiempo_usuario);
-        }
-    }*///no funciona el tiempo de busacar usuarios no encontrado
-
     save_CSV("tiempos_busqueda_usuarios_encontrados.csv", tiempos_busqueda_encontrados);
-    //save_CSV("tiempos_busqueda_usuarios_no_encontrados.csv", tiempos_busqueda_no_encontrados);//
 
     return 0;
 }
