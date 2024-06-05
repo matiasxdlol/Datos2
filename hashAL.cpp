@@ -22,13 +22,15 @@ struct User_data {
     string created_at;
 };
 
-// Función de hashing para convertir una cadena en un índice de la tabla hash
+// Función de hashing mejorada utilizando el método de multiplicación
 size_t funcion_hash(const string& key, size_t tabla_size) {
+    const double A = 0.6180339887; // Constante áurea
     size_t hash = 0;
     for (char c : key) {
-        hash = hash * 31 + c; // Simple función de hashing
+        hash += c;
     }
-    return hash % tabla_size;
+    double hash_double = tabla_size * (hash * A - floor(hash * A));
+    return static_cast<size_t>(hash_double);
 }
 
 // Clase para la tabla hash con hashing abierto
@@ -106,9 +108,9 @@ int main() {
 
     // Crear el archivo para guardar los tiempos de llenado de la tabla hash
     ofstream fill_times_file("tiempos_llenado_tabla_hash.csv");
-    fill_times_file << "Ciclo, Tiempo (ms)" << endl;
+    fill_times_file << "Ciclo, Tiempo (microsegundos)" << endl;
 
-    // Realizar 5 ciclos para medir el tiempo de llenado de la tabla hash
+    // Realizar 500 ciclos para medir el tiempo de llenado de la tabla hash
     for (int ciclo = 0; ciclo < 500; ++ciclo) {
         // Crear la tabla hash con un tamaño adecuado
         size_t table_size = users.size() * 2; // Doble del número de usuarios para disminuir colisiones
@@ -120,7 +122,7 @@ int main() {
             hash_table.insert(user);
         }
         auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
+        auto duration = duration_cast<microseconds>(stop - start);
 
         // Guardar el tiempo en el archivo
         fill_times_file << ciclo + 1 << ", " << duration.count() << endl;
@@ -133,4 +135,3 @@ int main() {
 
     return 0;
 }
-
