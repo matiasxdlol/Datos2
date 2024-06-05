@@ -23,12 +23,15 @@ struct User_data {
 };
 
 // Función de hashing para convertir una cadena en un índice de la tabla hash
+// Función de hashing mejorada utilizando el método de multiplicación
 size_t funcion_hash(const string& key, size_t tabla_size) {
+    const double A = 0.6180339887; // Constante áurea
     size_t hash = 0;
     for (char c : key) {
-        hash = hash * 31 + c; // Simple función de hashing
+        hash += c;
     }
-    return hash % tabla_size;
+    double hash_double = tabla_size * (hash * A - floor(hash * A));
+    return static_cast<size_t>(hash_double);
 }
 
 // Clase para la tabla hash con hashing abierto
@@ -49,14 +52,13 @@ public:
     // Método para buscar datos en la tabla hash
     vector<User_data> search(const string& university) {
         size_t index = funcion_hash(university, tabla_size);
-        return vector<User_data>(tabla[index].begin(), tabla[index].end());
-    }
-
-    // Método para obtener el tamaño de la tabla hash en MB
-    double tamaño_MB() const {
-        double size_element = sizeof(list<User_data>) + sizeof(User_data); // Suponiendo un tamaño fijo por elemento
-        double total_size = size_element * tabla_size;
-        return total_size / (1024 * 1024); // Convertir a MB
+        vector<User_data> results;
+        for (const auto& user : tabla[index]) {
+            if (user.university == university) {
+                results.push_back(user);
+            }
+        }
+        return results;
     }
 };
 
@@ -106,11 +108,11 @@ int main() {
 
     // Crear la tabla hash con un tamaño adecuado
     size_t table_size = users.size() * 2; // Doble del número de usuarios para disminuir colisiones
-    tabla_hash tabla_hash(table_size);
+    tabla_hash hash_table(table_size);
 
     // Insertar los usuarios en la tabla hash
     for (const auto& user : users) {
-        tabla_hash.insert(user);
+        hash_table.insert(user);
     }
 
     // Abrir el archivo para escribir los tiempos de búsqueda
@@ -122,14 +124,14 @@ int main() {
     mt19937 gen(rd());
     uniform_int_distribution<int> dist(0, users.size() - 1);
 
-    for (int i = 0; i < 500; ++i) {
+    for (int i = 0; i < 5000; ++i) {
         // Seleccionar un usuario aleatorio
         int index = dist(gen);
         const User_data& user = users[index];
 
         // Realizar la búsqueda y medir el tiempo
         auto start = high_resolution_clock::now();
-        vector<User_data> results = tabla_hash.search(user.university);
+        vector<User_data> results = hash_table.search(user.university);
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
 
@@ -140,15 +142,8 @@ int main() {
     // Cerrar el archivo
     outfile.close();
 
-    // Calcular y guardar el tamaño de la tabla hash en MB
-    double table_size_mb = tabla_hash.tamaño_MB();
-    ofstream sizefile("tamanio_tabla_hash.csv");
-    sizefile << "Tamaño (MB)" << endl;
-    sizefile << table_size_mb << endl;
-    sizefile.close();
-
     cout << "Tiempos de búsqueda guardados en 'tiempos_busqueda.csv'." << endl;
-    cout << "Tamaño de la tabla hash guardado en 'tamanio_tabla_hash.csv'." << endl;
 
     return 0;
 }
+
