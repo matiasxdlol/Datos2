@@ -11,7 +11,7 @@
 using namespace std;
 using namespace std::chrono;
 
-// Estructura para almacenar los datos de cada línea del archivo CSV
+//el struct almacena los datos
 struct User_data {
     string university;
     string user_id;
@@ -22,7 +22,7 @@ struct User_data {
     string created_at;
 };
 
-// Función de hashing mejorada utilizando el método de multiplicación
+//usa el id como key y aplicamos la inversa del número áureo
 size_t funcion_hash(const string& key, size_t tabla_size) {
     const double A = 0.6180339887; // Constante áurea
     size_t hash = 0;
@@ -33,7 +33,7 @@ size_t funcion_hash(const string& key, size_t tabla_size) {
     return static_cast<size_t>(hash_double);
 }
 
-// Clase para la tabla hash con hashing abierto
+//crea una tabla hash abierto
 class tabla_hash {
 private:
     size_t tabla_size;
@@ -42,35 +42,29 @@ private:
 public:
     tabla_hash(size_t size) : tabla_size(size), tabla(size) {}
 
-    // Método para insertar datos en la tabla hash
+//método para insertar datos en la tabla hash
     void insert(const User_data& data) {
-        size_t index = funcion_hash(data.university, tabla_size);
+        size_t index = funcion_hash(data.user_id, tabla_size); //usa user_id como key
         tabla[index].push_back(data);
     }
 
-    // Método para buscar datos en la tabla hash
-    vector<User_data> search(const string& university) {
-        size_t index = funcion_hash(university, tabla_size);
+//metodo para buscar datos en la tabla hash
+    vector<User_data> search(const string& user_id) {
+        size_t index = funcion_hash(user_id, tabla_size);  //usa user_id como key
         return vector<User_data>(tabla[index].begin(), tabla[index].end());
     }
 
-    // Método para obtener el tamaño de la tabla hash en MB
-    double tamaño_MB() const {
-        double size_element = sizeof(list<User_data>) + sizeof(User_data); // Suponiendo un tamaño fijo por elemento
-        double total_size = size_element * tabla_size;
-        return total_size / (1024 * 1024); // Convertir a MB
-    }
 };
 
-// Función para leer datos del archivo CSV y llenar el vector de usuarios
+//función para leer datos del csv y llenar el vector de usuarios
 void read_CSV(const string& filename, vector<User_data>& users) {
     ifstream file(filename);
     string line;
 
-    // Ignorar la primera línea (encabezado)
+//ignorar la primera línea (encabezado)
     getline(file, line);
 
-    // Leer cada línea del archivo CSV y almacenar los datos en el vector de usuarios
+//lee cada línea del csv y almacenar los datos en el vector de usuarios
     while (getline(file, line)) {
         stringstream ss(line);
         string token;
@@ -102,21 +96,21 @@ void read_CSV(const string& filename, vector<User_data>& users) {
 }
 
 int main() {
-    // Leer el archivo CSV y llenar el vector de usuarios
+//llama a la fucion para leer el csv y crea el vector usuarios para llenarlo
     vector<User_data> users;
     read_CSV("universities_followers.csv", users);
 
-    // Crear el archivo para guardar los tiempos de llenado de la tabla hash
+//crea el archivo para escribir los tiempos de búsqueda
     ofstream fill_times_file("tiempos_llenado_tabla_hash.csv");
     fill_times_file << "Ciclo, Tiempo (microsegundos)" << endl;
 
-    // Realizar 500 ciclos para medir el tiempo de llenado de la tabla hash
+//realiza 500 ciclos para medir el tiempo de llenado de la tabla hash
     for (int ciclo = 0; ciclo < 500; ++ciclo) {
-        // Crear la tabla hash con un tamaño adecuado
-        size_t table_size = users.size() * 2; // Doble del número de usuarios para disminuir colisiones
+//crea la table hash
+        size_t table_size = users.size() * 2; 
         tabla_hash hash_table(table_size);
 
-        // Medir el tiempo de llenado de la tabla hash
+//mide el tiempo de llenado de la tabla hash
         auto start = high_resolution_clock::now();
         for (const auto& user : users) {
             hash_table.insert(user);
@@ -124,11 +118,11 @@ int main() {
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
 
-        // Guardar el tiempo en el archivo
+//guardar el tiempo en el csv
         fill_times_file << ciclo + 1 << ", " << duration.count() << endl;
     }
 
-    // Cerrar el archivo de tiempos de llenado de la tabla hash
+//cierra el archivo
     fill_times_file.close();
 
     cout << "Tiempos de llenado de la tabla hash guardados en 'tiempos_llenado_tabla_hash.csv'." << endl;
