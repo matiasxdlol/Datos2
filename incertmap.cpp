@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::chrono;
-
+//el struct almacena los datos
 struct User_data {
     string university;
     string user_Id;
@@ -18,7 +18,7 @@ struct User_data {
     int followers_count;
     string created_at;
 };
-
+//divide una cadena s en tokens
 vector<string> split(const string &s, char delimit) {
     vector<string> tokens;
     string token;
@@ -28,7 +28,7 @@ vector<string> split(const string &s, char delimit) {
     }
     return tokens;
 }
-
+//combierte la cadena en double
 double convert_numero(const string& str) {
     stringstream ss(str);
     double number;
@@ -36,7 +36,7 @@ double convert_numero(const string& str) {
     return number;
 }
 
-
+//guarda en un vector los datos del csv, se usa para el csv de salida
 void save_CSV(const string& filename, const vector<vector<string>>& data) {
     ofstream file(filename);
     if (file.is_open()) {
@@ -56,9 +56,9 @@ void save_CSV(const string& filename, const vector<vector<string>>& data) {
 
 int main() {
     string filename = "universities_followers.csv";
-    vector<vector<string>> tiemposInsercion;
-    tiemposInsercion.push_back({"Iteración", "Tiempo de inserción (us)"});
-
+    vector<vector<string>> tiemposInsercion;//para guardar el tiempo de incercion
+    tiemposInsercion.push_back({"Iteración", "Tiempo de inserción (us)"});//para calcular el tiempo
+//hace 10 ciclo de leer completamente el csv y calcula el tiempo de llenado
     for (int i = 0; i < 10; ++i) {
         ifstream file(filename);
         if (!file.is_open()) {
@@ -97,10 +97,6 @@ int main() {
         auto duration = duration_cast<microseconds>(endTime - startTime);
         tiemposInsercion.push_back({to_string(i + 1), to_string(duration.count())});
 
-        
-
-        // Guardar el tamaño del vector lleno en un archivo CSV en cada iteración (si es necesario)
-        // save_CSV("tamaño_vector_lleno.csv", {{"Tamaño del vector lleno (MB)"}, {to_string(tamaño_MB)}});
     }
 
     save_CSV("tiempo_insercion.csv", tiemposInsercion);
