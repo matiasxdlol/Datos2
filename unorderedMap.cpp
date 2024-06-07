@@ -4,12 +4,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <chrono> // Agregado para medir el tiempo
+#include <chrono> 
 
 using namespace std;
-using namespace std::chrono; // Espacio de nombres para la biblioteca chrono
+using namespace std::chrono; 
 
-// Estructura para almacenar los datos de un usuario
+// el struct almacena los datos
 struct UserData {
     string university;
     string userId;
@@ -58,19 +58,6 @@ UserData findUser(const unordered_map<string, UserData>& usuarios, const string&
 }
 
 // Función para calcular el tamaño en bytes de una cadena
-size_t getStringSize(const string& str) {
-    return sizeof(char) * str.capacity();
-}
-
-// Función para calcular el tamaño de un UserData
-size_t getUserDataSize(const UserData& user) {
-    size_t size = sizeof(UserData);
-    size += getStringSize(user.university);
-    size += getStringSize(user.userId);
-    size += getStringSize(user.userName);
-    size += getStringSize(user.createdAt);
-    return size;
-}
 
 // Función para guardar datos en un archivo CSV
 void saveToCSV(const string& filename, const vector<vector<string>>& data) {
@@ -144,19 +131,12 @@ int main() {
     auto endTime = high_resolution_clock::now();
     auto duration = duration_cast<nanoseconds>(endTime - startTime);
 
-    // Calcular el tamaño total del unordered_map en MB
-    size_t totalSize = 0;
-    for (const auto& pair : usuariosPorId) {
-        totalSize += sizeof(pair.first) + getStringSize(pair.first);
-        totalSize += getUserDataSize(pair.second);
-    }
-    double totalSizeMB = static_cast<double>(totalSize) / (1024 * 1024);
+    
 
     // Guardar el tiempo de inserción de datos en un archivo CSV
     saveToCSV("tiempo_insercion.csv", {{"Tiempo de inserción (ns)"}, {to_string(duration.count())}});
 
-    // Guardar el tamaño del vector lleno en un archivo CSV
-    saveToCSV("tamaño_vector_lleno.csv", {{"Tamaño del vector lleno (MB)"}, {to_string(totalSizeMB)}});
+    
 
     // Cerrar el archivo
     file.close();
