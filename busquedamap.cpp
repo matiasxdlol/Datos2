@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::chrono; 
-
+//el struct almacena los datos
 struct User_data {
     string university;
     string user_Id;
@@ -18,7 +18,7 @@ struct User_data {
     int followers_count;
     string created_at;
 };
-
+//divide una cadena s en tokens
 vector<string> split(const string &s, char delimit) {
     vector<string> tokens;
     string token;
@@ -28,27 +28,27 @@ vector<string> split(const string &s, char delimit) {
     }
     return tokens;
 }
-
+//combierte la cadena en double 
 double convert_numero(const string& str) {
     stringstream ss(str);
     double number;
     ss >> number;
     return number;
 }
-
-size_t getStringSize(const string& str) {
+//calcula el tamaño en MB
+size_t get_string_size(const string& str) {
     return sizeof(char) * str.capacity();
 }
 
-size_t getUserDataSize(const User_data& user) {
+size_t get_user_data_size(const User_data& user) {
     size_t size = sizeof(User_data);
-    size += getStringSize(user.university);
-    size += getStringSize(user.user_Id);
-    size += getStringSize(user.user_name);
-    size += getStringSize(user.created_at);
+    size += get_string_size(user.university);
+    size += get_string_size(user.user_Id);
+    size += get_string_size(user.user_name);
+    size += get_string_size(user.created_at);
     return size;
 }
-
+//guarda en un vector los datos del csv, se usa para el csv de salida
 void save_CSV(const string& filename, const vector<vector<string>>& data) {
     ofstream file(filename);
     if (file.is_open()) {
@@ -67,13 +67,14 @@ void save_CSV(const string& filename, const vector<vector<string>>& data) {
 }
 
 int main() {
+    //ablre el archivo csv
     string filename = "universities_followers.csv";
     ifstream file(filename);
     if (!file.is_open()) {
         cout << "No se pudo abrir el archivo " << filename << endl;
         return 1;
     }
-
+    //lee cada línea del archivo, la divide en tokens y crea una estructura User_data que luego agrega al vector usuarios.
     vector<User_data> usuarios;
 
     string line;
@@ -94,12 +95,12 @@ int main() {
         usuarios.push_back(user);
     }
     file.close();
-
+    //genera 5000 índices aleatorios dentro del rango del tamaño del vector usuarios y los almacena en indices_registrados.
     vector<int> indices_registrados;
-    vector<int> indices_no_registrados;
-    srand(time(nullptr)); // Seed para números aleatorios
+    
+    srand(time(nullptr)); //seed para números aleatorios
 
-    // Generar 5000 índices aleatorios para usuarios registrados
+    
     for (int i = 0; i < 5000; ++i) {
         int index = rand() % usuarios.size();
         indices_registrados.push_back(index);
@@ -127,8 +128,9 @@ int main() {
             tiempos_busqueda_encontrados.push_back(tiempo_usuario);
         }
     }
-
+    //guarda en un csv el tiempo de busqueda
     save_CSV("tiempos_busqueda_usuarios_encontrados.csv", tiempos_busqueda_encontrados);
 
     return 0;
 }
+
