@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::chrono;
-
+//el struct almacena los datos
 struct User_data {
     string university;
     string user_Id;
@@ -18,7 +18,7 @@ struct User_data {
     int followers_count;
     string created_at;
 };
-
+// divide una cadena s en tokens
 vector<string> split(const string &s, char delimit) {
     vector<string> tokens;
     string token;
@@ -28,7 +28,7 @@ vector<string> split(const string &s, char delimit) {
     }
     return tokens;
 }
-
+// combierte la cadena en double
 double convert_numero(const string& str) {
     stringstream ss(str);
     double number;
@@ -36,7 +36,7 @@ double convert_numero(const string& str) {
     return number;
 }
 
-
+//guarda en un vector los datos del csv, se usa para el csv de salida
 void save_CSV(const string& filename, const vector<vector<string>>& data) {
     ofstream file(filename);
     if (file.is_open()) {
@@ -57,15 +57,15 @@ void save_CSV(const string& filename, const vector<vector<string>>& data) {
 int main() {
     string filename = "universities_followers.csv";
 
-    // Vectores para almacenar los tiempos de inserción y los tamaños del vector
+//vectores para almacenar los tiempos de inserción y los tamaños del vector
     vector<vector<string>> tiemposInsercion;
     vector<vector<string>> tamañosVector;
     tiemposInsercion.push_back({"Iteración", "Tamaño (MB)"});
     tamañosVector.push_back({"Iteración", "Tiempo de inserción (us)"});
 
-    // Números de iteraciones
-    vector<int> iteraciones = {1000, 5000, 10000, 21070}; // 21070 para leer todo el archivo
-
+//tiene la cantidad de lineas a leer para tomar el tiempo y tamaño
+    vector<int> iteraciones = {1000, 5000, 10000, 21070}; 
+//el ciclo es para saber cuantas lineas tiene que leer, despues calcula el tiempo y tamaño y lo pone en 2 csv 
     for (int i = 0; i < iteraciones.size(); ++i) {
         int iteracion = iteraciones[i];
 
@@ -108,7 +108,7 @@ int main() {
         auto endTime = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(endTime - startTime);
 
-        // Calcular el tamaño total del vector en MB
+//calcular el tamaño total del vector en MB
         size_t totalSize = 0;
         for (const auto& pair : usuariosPorId) {
             totalSize += sizeof(pair.first) + sizeof(User_data);
@@ -117,18 +117,17 @@ int main() {
         }
         double totalSizeMB = static_cast<double>(totalSize) / (1024 * 1024);
 
-        // Agregar los datos al vector correspondiente
+//añade los datos al vector correspondiente
         tiemposInsercion.push_back({to_string(iteracion), to_string(totalSizeMB)});
         tamañosVector.push_back({to_string(iteracion), to_string(duration.count())});
 
-        // Cerrar el archivo
         file.close();
     }
 
-    // Guardar los tiempos de inserción en un archivo CSV
+//guardar el tiempos de inserción en un csv
     save_CSV("tiempos_insercion.csv", tamañosVector);
 
-    // Guardar los tamaños del vector en un archivo CSV
+//guardar el tamaños del vector en un csv
     save_CSV("tamaños_vector.csv", tiemposInsercion);
 
     return 0;
