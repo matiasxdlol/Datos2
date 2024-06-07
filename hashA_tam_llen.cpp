@@ -11,7 +11,7 @@
 using namespace std;
 using namespace std::chrono;
 
-// Estructura para almacenar los datos de cada línea del archivo CSV
+//el struct almacena los datos
 struct User_data {
     string university;
     string user_id;
@@ -22,7 +22,7 @@ struct User_data {
     string created_at;
 };
 
-// Función de hashing para convertir una cadena en un índice de la tabla hash
+//usa el id como key y aplicamos la inversa del número áureo
 size_t funcion_hash(const string& key, size_t tabla_size) {
     const double A = 0.6180339887; // Constante áurea
     size_t hash = 0;
@@ -33,7 +33,7 @@ size_t funcion_hash(const string& key, size_t tabla_size) {
     return static_cast<size_t>(hash_double);
 }
 
-// Clase para la tabla hash con hashing abierto
+//crea una tabla hash abierto
 class tabla_hash {
 private:
     size_t tabla_size;
@@ -42,19 +42,25 @@ private:
 public:
     tabla_hash(size_t size) : tabla_size(size), tabla(size) {}
 
-    // Método para insertar datos en la tabla hash
+//método para insertar datos en la tabla hash
     void insert(const User_data& data) {
-        size_t index = funcion_hash(data.university, tabla_size);
+        size_t index = funcion_hash(data.user_id, tabla_size); //usa user_id como key
         tabla[index].push_back(data);
     }
 
-    // Método para buscar datos en la tabla hash
-    vector<User_data> search(const string& university) {
-        size_t index = funcion_hash(university, tabla_size);
-        return vector<User_data>(tabla[index].begin(), tabla[index].end());
+//metodo para buscar datos en la tabla hash
+    vector<User_data> search(const string& user_id) {
+        size_t index = funcion_hash(user_id, tabla_size); //usa user_id como key
+        vector<User_data> results;
+        for (const auto& user : tabla[index]) {
+            if (user.user_id == user_id) {
+                results.push_back(user);
+            }
+        }
+        return results;
     }
 
-    // Método para obtener el tamaño de la tabla hash en MB
+//método para obtener el tamaño de la tabla hash en MB
     double tamaño_MB() const {
         double size_element = sizeof(list<User_data>) + sizeof(User_data); // Suponiendo un tamaño fijo por elemento
         double total_size = size_element * tabla_size;
@@ -62,15 +68,15 @@ public:
     }
 };
 
-// Función para leer datos del archivo CSV y llenar el vector de usuarios
+//función para leer datos del csv y llenar el vector de usuarios
 void read_CSV(const string& filename, vector<User_data>& users, int num_lines) {
     ifstream file(filename);
     string line;
 
-    // Ignorar la primera línea (encabezado)
+//ignora la primera línea (encabezado)
     getline(file, line);
 
-    // Leer cada línea del archivo CSV y almacenar los datos en el vector de usuarios
+//lee cada línea del csv y almacenar los datos en el vector de usuarios
     for (int i = 0; i < num_lines; ++i) {
         if (!getline(file, line))
             break;
@@ -105,26 +111,29 @@ void read_CSV(const string& filename, vector<User_data>& users, int num_lines) {
 }
 
 int main() {
-    vector<int> iteraciones = {1000, 5000, 10000, 21070}; // 21070 para leer todo el archivo
+    //vector que almacena la cantidad de linea a leer
+    vector<int> iteraciones = {1000, 5000, 10000, 21070}; 
 
+//crea el archivo para escribir los tiempos de búsqueda
     ofstream time_file("tiempos_llenado_tabla_hash.csv");
     time_file << "Numero de Lineas,Tiempo (microsegundos)" << endl;
 
+//crea el archivo para escribir el tamaño de la tabla hash
     ofstream size_file("tamaño_tabla_hash.csv");
     size_file << "Numero de Lineas,Tamaño (MB)" << endl;
 
     for (int i = 0; i < iteraciones.size(); ++i) {
         int iteracion = iteraciones[i];
 
-        // Crear la tabla hash con un tamaño adecuado
-        size_t table_size = iteracion * 2; // Doble del número de usuarios para disminuir colisiones
+//crea la tabla hash 
+        size_t table_size = iteracion * 2; 
         tabla_hash hash_table(table_size);
 
-        // Leer las iteraciones especificadas
+//Lee las iteraciones especificadas
         vector<User_data> users;
         read_CSV("universities_followers.csv", users, iteracion);
 
-        // Insertar los usuarios en la tabla hash y medir el tiempo
+//inserta los usuarios en la tabla hash y medir el tiempo
         auto start = high_resolution_clock::now();
         for (const auto& user : users) {
             hash_table.insert(user);
@@ -132,11 +141,11 @@ int main() {
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
 
-        // Guardar el tiempo y el tamaño en archivos CSV
+//guarda el tiempo y el tamaño en archivos CSV
         time_file << iteracion << "," << duration.count() << endl;
         size_file << iteracion << "," << hash_table.tamaño_MB() << endl;
 
-        // Limpiar el vector de usuarios para la siguiente lectura
+//Limpia el vector de usuarios para la siguiente lectura
         users.clear();
     }
 
