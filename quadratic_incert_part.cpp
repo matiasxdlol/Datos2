@@ -18,7 +18,6 @@ struct User_data {
     string created_at;
 };
 
-// Función hash simple
 size_t funcion_hash(const string& key, size_t tabla_size) {
     size_t hash = 0;
     for (char c : key) {
@@ -71,9 +70,13 @@ public:
         }
         return false;
     }
+
+    // Calcular el tamaño de la tabla en MB
+    double size_MB() const {
+        return (tabla_size * sizeof(User_data) + tabla_size * sizeof(bool)) / (1024.0 * 1024.0);
+    }
 };
 
-// Función para dividir una cadena en tokens utilizando un delimitador
 vector<string> split(const string &s, char delimit) {
     vector<string> tokens;
     string token;
@@ -84,7 +87,6 @@ vector<string> split(const string &s, char delimit) {
     return tokens;
 }
 
-// Función para convertir una cadena en un número
 double convert_numero(const string& str) {
     stringstream ss(str);
     double number;
@@ -92,7 +94,6 @@ double convert_numero(const string& str) {
     return number;
 }
 
-// Función para guardar los datos en un archivo CSV
 void save_CSV(const string& filename, const vector<vector<string>>& data) {
     ofstream file(filename);
     if (file.is_open()) {
@@ -139,6 +140,7 @@ int main() {
     file.close();
 
     vector<long long> insertion_times;
+    vector<double> table_sizes; // Almacena los tamaños de la tabla en MB
 
     vector<int> insertions = {1000, 5000, 10000, static_cast<int>(usuarios.size())};
 
@@ -156,6 +158,9 @@ int main() {
 
         // Guardar el tiempo de inserción en el vector
         insertion_times.push_back(insertion_duration.count());
+
+        // Calcular y guardar el tamaño de la tabla en MB
+        table_sizes.push_back(hash_table.size_MB());
     }
 
     // Guardar los tiempos de inserción en un archivo CSV
@@ -164,7 +169,15 @@ int main() {
     for (int i = 0; i < insertions.size(); ++i) {
         insertion_data.push_back({to_string(insertions[i]), to_string(insertion_times[i])});
     }
-    save_CSV("tiempos_insercion_quadratic_por partes.csv", insertion_data);
+    save_CSV("tiempos_insercion_quadratic_por_partes.csv", insertion_data);
+
+    // Guardar los tamaños de la tabla en un archivo CSV
+    vector<vector<string>> table_size_data;
+    table_size_data.push_back({"Cantidad", "Tamaño de la tabla (MB)"});
+    for (int i = 0; i < insertions.size(); ++i) {
+        table_size_data.push_back({to_string(insertions[i]), to_string(table_sizes[i])});
+    }
+    save_CSV("tamaño_tabla_quadratic_por_partes.csv", table_size_data);
 
     return 0;
 }
