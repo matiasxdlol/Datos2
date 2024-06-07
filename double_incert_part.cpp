@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
-#include <functional>
+#include <iomanip>
 
 using namespace std;
 using namespace std::chrono;
@@ -154,8 +154,9 @@ int main() {
     }
     file.close();
 
-    // Vectores para almacenar los tiempos de inserción
+    // Vectores para almacenar los tiempos de inserción y tamaños de tabla
     vector<long long> insertion_times;
+    vector<double> table_sizes;
 
     // Insertar para 1000, 5000, 10000 y total
     vector<int> iteraciones = {1000, 5000, 10000, static_cast<int>(usuarios.size())};
@@ -169,8 +170,12 @@ int main() {
         for (int i = 0; i < iteracion; ++i) {
             hash_table.insert(usuarios[i]);
         }
-        auto stop_insertion =high_resolution_clock::now();
+        auto stop_insertion = high_resolution_clock::now();
         auto insertion_duration = duration_cast<milliseconds>(stop_insertion - start_insertion);
+
+        // Calcular el tamaño de la tabla
+        double size_mb = hash_table.size_MB();
+        table_sizes.push_back(size_mb);
 
         // Guardar el tiempo de inserción en el vector
         insertion_times.push_back(insertion_duration.count());
@@ -182,8 +187,17 @@ int main() {
     for (size_t i = 0; i < iteraciones.size(); ++i) {
         insertion_data.push_back({to_string(iteraciones[i]), to_string(insertion_times[i])});
     }
-    save_CSV("tiempos_insercion double por partes.csv", insertion_data);
+    save_CSV("tiempos_insercion_double_hashing.csv", insertion_data);
+
+    // Guardar los tamaños de la tabla en un archivo CSV
+    vector<vector<string>> table_size_data;
+    table_size_data.push_back({"Iteración", "Tamaño de la tabla (MB)"});
+    for (size_t i = 0; i < iteraciones.size(); ++i) {
+        table_size_data.push_back({to_string(iteraciones[i]), to_string(table_sizes[i])});
+    }
+    save_CSV("tamanio_tabla_double_hashing.csv", table_size_data);
 
     return 0;
 }
+
 
